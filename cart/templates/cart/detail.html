@@ -1,0 +1,98 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% block title %}
+    Корзина товаров
+{% endblock %}
+{% block content %}
+<h1 xmlns:discount="http://www.w3.org/1999/xhtml">Ваша корзина товаров</h1>
+    <table class="cart">
+        <thead>
+        <tr>
+            <th>Изображение</th>
+            <th>Настольная игра</th>
+            <th>Количество товара</th>
+            <th>Удалить товар</th>
+            <th>Цена за 1 игру</th>
+            <th>Суммарная стоимость за лот</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in cart %}
+            {% with product=item.product %}
+                <tr>
+                    <td>
+                        <a href="{{ product.get_absolute_url }}">
+                            <img src="
+                                {% if product.image %}
+                                    {{ product.image.url }}
+                                {% else %}
+                                    {% static "img/no_image.png" %}
+                                {% endif %}">
+                        </a>
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td><a href="{% url "cart:cart_remove" product.id%}">Удалить товар</a></td>
+                    <td class="num">{{ item.price }}</td>
+                    <td class="num">{{ item.total_price }}</td>
+                </tr>
+            {% endwith %}
+        {% endfor %}
+       {% if cart.discount %}
+    <tr class="subtotal">
+        <td>Предварительная стоимость</td>
+        <td colspan="4"></td>
+        <td class="num">{{ cart.get_total_price }}</td>
+    </tr>
+    <tr>
+        <td>
+            "{{ cart.coupon.code }}" скидка
+            ({{ cart.coupon.discount }}% )
+        </td>
+        <td colspan="4"></td>
+        <td class="num neg">
+            - {{ cart.get_discount|floatformat:"2" }}
+        </td>
+    </tr>
+{% endif %}
+{% if cart.discount %}
+    <tr class="subtotal">
+        <td>Предварительная стоимость</td>
+        <td colspan="4"></td>
+        <td class="num">{{ cart.get_total_price }}</td>
+    </tr>
+    <tr>
+        <td>
+            "{{ cart.discount.code }}" скидка
+            ({{ cart.discount.discount }}% off)
+        </td>
+        <td colspan="4"></td>
+        <td class="num neg">
+            - {{ cart.get_discount|floatformat:"2" }}
+        </td>
+    </tr>
+{% endif %}
+<tr class="total">
+    <td>Сумма заказа</td>
+    <td colspan="4"></td>
+    <td class="num">
+        {{ cart.get_total_price_after_discount|floatformat:"2" }}
+    </td>
+</tr>
+        </tbody>
+    </table>
+<form action="{% url "discounts:apply" %}" method="post">
+    {{ discount_apply_form }}
+    <input type="submit" value="Ввести бонус-код">
+    {% csrf_token %}
+</form>
+    <p class="text-right">
+        <a href="{% url "shop:product_list" %}" class="button light">Продолжить покупки</a>
+        <a href="{% url "orders:order_create" %}" class="button">
+            Оформить заказ
+        </a>
+    </p>
+{% endblock %}
+
+
+
